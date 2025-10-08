@@ -12,7 +12,7 @@ class DapurSeeder extends Seeder
      */
     public function run(): void
     {
-        Dapur::create([
+        Dapur::FirstOrCreate([
             'nama_produk' => 'Beras Super Rajoele',
             'merek' => 'Rajoele',
             'harga_produk' => 1400,

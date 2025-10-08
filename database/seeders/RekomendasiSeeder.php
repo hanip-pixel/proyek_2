@@ -12,7 +12,7 @@ class RekomendasiSeeder extends Seeder
      */
     public function run(): void
     {
-        Rekomendasi::create([
+        Rekomendasi::FirstOrCreate([
             'nama_produk' => 'Sweety Silver Pants',
             'merek' => 'Sweety',
             'harga_produk' => 2500,
@@ -22,7 +22,7 @@ class RekomendasiSeeder extends Seeder
             'deskripsi' => '- Merek: Sweety- Bentuk: Popok celana sekali pakai- Warna: Putih dengan motif warna-warni- Komposisi utama: Bahan lembut dan elastis, lapisan penyerap, pelindung anti bocor- Manfaat: Daya serap tinggi untuk menjaga kulit bayi tetap kering, Bahan lembut dan nyaman untuk bayi aktif, Desain elastis yang pas di tubuh bayi tanpa meninggalkan bekas merah',
 
         ]);
-        Rekomendasi::create([
+        Rekomendasi::FirstOrCreate([
             'nama_produk' => 'Susu Bear Brand',
             'merek' => 'Nestle',
             'harga_produk' => 10000,
@@ -32,7 +32,7 @@ class RekomendasiSeeder extends Seeder
             'deskripsi' => '- Isi: 189ml per kaleng- Bentuk: Cair, susu steril siap minum- Warna: Putih susu- Komposisi utama: 100% susu sapi murni yang telah disterilisasi- Manfaat: Membantu menjaga daya tahan tubuh, Sumber nutrisi untuk mendukung kesehatan tubuh',
             
         ]);
-        Rekomendasi::create([
+        Rekomendasi::FirstOrCreate([
             'nama_produk' => 'Gas Elpiji 3kg',
             'merek' => 'Pertamina',
             'harga_produk' => 23000,
@@ -40,6 +40,16 @@ class RekomendasiSeeder extends Seeder
             'terjual' => 41,
             'foto_produk' => 'gas.jpg',
             'deskripsi' => '- Merek: Pertamina- Isi: 3 kg gas LPG (Liquefied Petroleum Gas)- Bentuk: Tabung bulat berwarna hijau dengan katup pengaman- Komposisi utama: Campuran propana dan butana- Manfaat: Digunakan sebagai bahan bakar untuk memasak di rumah tangga, Hemat dan efisien untuk kebutuhan dapur sehari hari, Mudah digunakan dengan regulator khusus- Cara penggunaan: Pasangkan dengan regulator gas dan selang, gunakan sesuai petunjuk keamanan',
+            
+        ]);
+        Rekomendasi::FirstOrCreate([
+            'nama_produk' => 'Lampu LUBY',
+            'merek' => 'LUBY',
+            'harga_produk' => 25000,
+            'stok' => 13,
+            'terjual' => 34,
+            'foto_produk' => 'luby.jpeg',
+            'deskripsi' => '- Merek: LUBY- Daya: Tersedia 18W- Bentuk: Bohlam LED atau lampu emergency- Warna Cahaya: Putih terang (cool white), kuning hangat (warm white), atau putih natural (daylight)- Komposisi utama: Bahan plastik dan aluminium dengan teknologi LED hemat energi',
             
         ]);
     }
