@@ -12,6 +12,7 @@ class Rekomendasi extends Model
     public $timestamps = false; 
 
     protected $table = 'rekomendasi';
+    protected $connection = 'mysql_barang';
     
     protected $fillable = [
             'nama_produk',

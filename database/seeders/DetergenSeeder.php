@@ -21,7 +21,8 @@ class DetergenSeeder extends Seeder
             'foto_produk' => 'rinso.jpg',
             'deskripsi' => '- Bentuk: Bubuk- Warna: Putih- Komposisi utama: Deterjen, bahan penghilang noda, pelembut pakaian- Manfaat: Membersihkan pakaian dari noda dan kotoran, Membuat pakaian lebih harum dan lembut, Bisa digunakan untuk mesin cuci atau cucian tangan',
 
-        ]);Detergen::FirstOrCreate([
+        ]);
+        Detergen::FirstOrCreate([
             'nama_produk' => 'Molto 1 Rencang',
             'merek' => 'Molto',
             'harga_produk' => 5000,

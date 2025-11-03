@@ -43,7 +43,7 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
-        'mysql' => [
+        'mysql_barang' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -63,7 +63,7 @@ return [
             ]) : [],
         ],
 
-        'mysql2' => [
+        'mysql_pengguna' => [
             'driver' => env('DB_PENGGUNA_CONNECTION', 'mysql'),
             'url' => env('DB_PENGGUNA_URL'),
             'host' => env('DB_PENGGUNA_HOST', '127.0.0.1'),

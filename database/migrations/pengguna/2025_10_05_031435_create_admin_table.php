@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('mysql2')->create('admin', function (Blueprint $table) {
+        Schema::connection('mysql')->create('admin', function (Blueprint $table) {
             $table->string('username', 15)->primary();
             $table->string('email', 50)->unique();
             $table->string('password', 100);
