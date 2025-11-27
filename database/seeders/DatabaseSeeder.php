@@ -15,5 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RekomendasiSeeder::class);
         $this->call(DapurSeeder::class);
+        $this->call(DetergenSeeder::class);
+        $this->call(ObatSeeder::class);
     }
 }

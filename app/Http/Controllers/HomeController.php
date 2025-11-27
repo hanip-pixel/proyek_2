@@ -33,44 +33,46 @@ class HomeController extends Controller
     {
         switch ($filter) {
             case 'rekomendasi':
-                return Rekomendasi::select('*')->selectRaw("'rekomendasi' as barang")->get();
+                // ✅ PERBAIKI: 'rekomendasi' as tabel_asal
+                return Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->get();
                 
             case 'terbaru':
-                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as barang")->latest()->first();
-                $dapur = Dapur::select('*')->selectRaw("'dapur' as barang")->latest()->first();
-                $detergen = Detergen::select('*')->selectRaw("'detergen' as barang")->latest()->first();
-                $obat = Obat::select('*')->selectRaw("'obat' as barang")->latest()->first();
+                // ✅ PERBAIKI SEMUA: ganti 'barang' jadi 'tabel_asal'
+                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->latest()->first();
+                $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->latest()->first();
+                $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->latest()->first();
+                $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->latest()->first();
                 
                 return collect([$rekomendasi, $dapur, $detergen, $obat])->filter()->take(6);
                 
             case 'stok_menipis':
-                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as barang")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
-                $dapur = Dapur::select('*')->selectRaw("'dapur' as barang")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
-                $detergen = Detergen::select('*')->selectRaw("'detergen' as barang")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
-                $obat = Obat::select('*')->selectRaw("'obat' as barang")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
+                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
+                $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
+                $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
+                $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->where('stok', '<', 5)->orderBy('stok')->take(6)->get();
                 
                 $result = $rekomendasi->concat($dapur)->concat($detergen)->concat($obat)->sortBy('stok')->take(6);
                 return $result->isEmpty() ? collect() : $result;
                 
             case 'terlaris':
-                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as barang")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
-                $dapur = Dapur::select('*')->selectRaw("'dapur' as barang")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
-                $detergen = Detergen::select('*')->selectRaw("'detergen' as barang")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
-                $obat = Obat::select('*')->selectRaw("'obat' as barang")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
+                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
+                $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
+                $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
+                $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->where('terjual', '>', 150)->orderByDesc('terjual')->take(6)->get();
                 
                 $result = $rekomendasi->concat($dapur)->concat($detergen)->concat($obat)->sortByDesc('terjual')->take(6);
                 
                 if ($result->isEmpty()) {
-                    $dapur = Dapur::select('*')->selectRaw("'dapur' as barang")->orderByDesc('terjual')->take(6)->get();
-                    $detergen = Detergen::select('*')->selectRaw("'detergen' as barang")->orderByDesc('terjual')->take(6)->get();
-                    $obat = Obat::select('*')->selectRaw("'obat' as barang")->orderByDesc('terjual')->take(6)->get();
+                    $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->orderByDesc('terjual')->take(6)->get();
+                    $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->orderByDesc('terjual')->take(6)->get();
+                    $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->orderByDesc('terjual')->take(6)->get();
                     return $dapur->concat($detergen)->concat($obat)->sortByDesc('terjual')->take(6);
                 }
                 
                 return $result;
                 
             default:
-                return Rekomendasi::select('*')->selectRaw("'rekomendasi' as barang")->get();
+                return Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->get();
         }
     }
     
@@ -78,11 +80,11 @@ class HomeController extends Controller
     {
         switch ($kategori) {
             case 'detergen':
-                return Detergen::all();
+                return Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->get();
             case 'obat':
-                return Obat::all();
+                return Obat::select('*')->selectRaw("'obat' as tabel_asal")->get();
             default: // 'dapur'
-                return Dapur::all();
+                return Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->get();
         }
     }
 }

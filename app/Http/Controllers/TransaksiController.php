@@ -1,0 +1,247 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+
+class TransaksiController extends Controller
+{
+    public function show($id, $tabel)
+    {
+        // Cek login
+        if (!Session::get('loggedin')) {
+            return redirect('/login')->with('error', 'Anda harus login terlebih dahulu!');
+        }
+
+        // Validasi nama tabel
+        $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
+        if (!in_array($tabel, $tabel_valid)) {
+            abort(404, 'Tabel tidak valid');
+        }
+
+        // Ambil produk dari database
+        $produk = DB::connection('mysql_barang')
+            ->table($tabel)
+            ->where('id', $id)
+            ->first();
+
+        if (!$produk) {
+            abort(404, 'Produk tidak ditemukan');
+        }
+
+        // Ambil ulasan
+        $ulasan = DB::connection('mysql_barang')
+            ->table('ulasan')
+            ->where('produk_id', $id)
+            ->where('tabel', $tabel)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        $total_ulasan = $ulasan->count();
+
+        // Rata-rata rating
+        $avg_rating = DB::connection('mysql_barang')
+            ->table('ulasan')
+            ->where('produk_id', $id)
+            ->where('tabel', $tabel)
+            ->avg('rating');
+
+        $avg_rating = round($avg_rating ?: 0, 1);
+
+        // Share info
+        $url_produk = url("/transaksi/{$id}/{$tabel}");
+        $nama_produk = $produk->nama_produk;
+        $harga = number_format($produk->harga_produk, 0, ',', '.');
+        $deskripsi_singkat = strtok($produk->deskripsi, '-');
+        $pesan_share = urlencode("Cek produk ini: $nama_produk\nHarga: Rp$harga\n$url_produk\n$deskripsi_singkat");
+
+        return view('pages.transaksi', compact(
+            'produk', 'tabel', 'ulasan', 'total_ulasan', 
+            'avg_rating', 'url_produk', 'pesan_share',
+            'id'
+        ));
+    }
+
+    // Method untuk handle query string
+    public function showWithQuery(Request $request)
+    {
+        $id = $request->get('id');
+        $tabel = $request->get('tabel');
+        
+        if (!$id || !$tabel) {
+            abort(404, 'Parameter tidak lengkap');
+        }
+        
+        return $this->show($id, $tabel);
+    }
+
+    public function storeUlasan(Request $request, $id, $tabel)
+    {
+        // Validasi
+        $request->validate([
+            'nama' => 'required|string|max:100',
+            'komentar' => 'required|string',
+            'rating' => 'required|integer|between:1,5'
+        ]);
+
+        // Validasi nama tabel
+        $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
+        if (!in_array($tabel, $tabel_valid)) {
+            return redirect()->back()->with('error', 'Tabel tidak valid');
+        }
+
+        // Simpan ulasan
+        DB::connection('mysql_barang')->table('ulasan')->insert([
+            'produk_id' => $id,
+            'tabel' => $tabel,
+            'nama' => $request->nama,
+            'komentar' => $request->komentar,
+            'rating' => $request->rating,
+            'tanggal' => now(),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return redirect("/transaksi/{$id}/{$tabel}")->with('success', 'Ulasan berhasil dikirim!');
+    }
+
+    // METHOD UNTUK TRANSAKSI LANJUT
+    public function showLanjut(Request $request)
+    {
+        // Cek login
+        if (!Session::get('loggedin')) {
+            return redirect('/login')->with('error', 'Anda harus login terlebih dahulu!');
+        }
+
+        $id = $request->get('id');
+        $tabel = $request->get('tabel');
+
+        if (!$id || !$tabel) {
+            abort(404, 'Parameter tidak lengkap');
+        }
+
+        // Validasi nama tabel
+        $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
+        if (!in_array($tabel, $tabel_valid)) {
+            abort(404, 'Tabel tidak valid');
+        }
+
+        // Ambil produk dari database barang
+        $produk = DB::connection('mysql_barang')
+            ->table($tabel)
+            ->where('id', $id)
+            ->first();
+
+        if (!$produk) {
+            abort(404, 'Produk tidak ditemukan');
+        }
+
+        // SET BIAYA TETAP
+        $ongkir = 1500;
+        $layanan = 1000;
+        $jasa = 500;
+
+        // Tambahkan properti ongkir, layanan, jasa ke objek produk
+        $produk->ongkir = $ongkir;
+        $produk->layanan = $layanan;
+        $produk->jasa = $jasa;
+
+        // Handle stok_produk jika tidak ada (gunakan stok biasa)
+        $produk->stok_produk = $produk->stok_produk ?? $produk->stok ?? 0;
+
+        return view('pages.transaksi_lanjut', compact('produk', 'id', 'tabel'));
+    }
+
+    public function prosesPembelian(Request $request)
+    {
+        // Cek login
+        if (!Session::get('loggedin')) {
+            return redirect('/login')->with('error', 'Anda harus login terlebih dahulu!');
+        }
+
+        // Validasi input
+        $request->validate([
+            'produk_id' => 'required|integer',
+            'tabel' => 'required|string',
+            'metode_pembayaran' => 'required|string',
+            'quantity' => 'required|integer|min:1',
+            'total_harga' => 'required|numeric'
+        ]);
+
+        $produk_id = $request->produk_id;
+        $tabel = $request->tabel;
+        $metode_pembayaran = $request->metode_pembayaran;
+        $quantity = $request->quantity;
+        $total_harga = $request->total_harga;
+
+        // Validasi nama tabel
+        $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
+        if (!in_array($tabel, $tabel_valid)) {
+            return redirect()->back()->with('error', 'Tabel tidak valid');
+        }
+
+        // Ambil produk untuk validasi stok
+        $produk = DB::connection('mysql_barang')
+            ->table($tabel)
+            ->where('id', $produk_id)
+            ->first();
+
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan');
+        }
+
+        // Validasi stok
+        $stok = $produk->stok_produk ?? $produk->stok ?? 0;
+        if ($stok < $quantity) {
+            return redirect()->back()->with('error', 'Stok tidak mencukupi');
+        }
+
+        try {
+            // SET BIAYA TETAP
+            $ongkir = 1500;
+            $layanan = 1000;
+            $jasa = 500;
+
+            // Simpan transaksi ke database pengguna
+            $transaksi_id = DB::connection('mysql_pengguna')->table('riwayat_transaksi')->insertGetId([
+                'user_id' => Session::get('user_id'),
+                'produk_id' => $produk_id,
+                'tabel_produk' => $tabel,
+                'nama_produk' => $produk->nama_produk,
+                'harga_produk' => $produk->harga_produk,
+                'ongkir' => $ongkir,
+                'layanan' => $layanan,
+                'jasa' => $jasa,
+                'quantity' => $quantity,
+                'total_harga' => $total_harga,
+                'metode_pembayaran' => $metode_pembayaran,
+                'foto_produk' => $produk->foto_produk,
+                'status' => 'dikemas',
+                'tanggal_transaksi' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Update stok produk di database barang
+            DB::connection('mysql_barang')
+                ->table($tabel)
+                ->where('id', $produk_id)
+                ->decrement('stok_produk', $quantity);
+
+            // Update terjual
+            DB::connection('mysql_barang')
+                ->table($tabel)
+                ->where('id', $produk_id)
+                ->increment('terjual', $quantity);
+
+            // Redirect ke halaman riwayat setelah berhasil
+            return redirect()->route('riwayat.index')
+                ->with('success', 'Pembelian berhasil diproses!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+}

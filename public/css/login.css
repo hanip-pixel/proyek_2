@@ -1,0 +1,125 @@
+:root {
+  --background: #013023;
+  --button: #084908;
+  --button2: #32de32;
+  --hover-button: #00695c;
+  --color-text: #817e7e;
+  --text-2: #444444;
+  --white: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--hover-button);
+  font-family: "Poppins", sans-serif;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  gap: 150px;
+  margin-top: 50px;
+}
+
+.left {
+  text-align: center;
+}
+
+.title h2 {
+  font-family: "Bebas Neue", sans-serif;
+  color: var(--white);
+  font-size: 4rem;
+  margin-top: 70px;
+  text-align: center;
+}
+
+.right img {
+  width: auto;
+  height: 85vh;
+}
+
+.form-login {
+  width: 100%;
+  color: var(--white);
+  font-size: 20px;
+  margin-top: 40px;
+}
+
+.form-login h4 {
+  font-size: 16px;
+  text-align: end;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-row label {
+  margin-bottom: 15px;
+  text-align: start;
+  font-size: 17px;
+}
+
+.form-row input {
+  width: 100%;
+  padding: 10px 25px;
+  font-size: 20px;
+  border: 2px solid var(--white);
+  border-radius: 5px;
+  background-color: transparent;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.form-row input:focus {
+  border-color: var(--white); /* Ganti dengan warna yang kamu mau */
+  color: var(--white);
+  outline: none; /* Hilangkan outline biru default dari browser */
+}
+
+input::placeholder {
+  color: var(--white); /* Ganti dengan warna yang kamu mau */
+}
+
+.form-row.full {
+  display: flex;
+  justify-content: center;
+}
+
+.form-row button {
+  width: 100%;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: var(--button2);
+  color: #000;
+  font-weight: 800;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin-top: 8px;
+}
+
+.form-row button:hover {
+  background-color: #00c3ff;
+  color: var(--white);
+}
+
+.left a {
+  text-decoration: none;
+  color: white;
+  font-size: 20px;
+  display: inline-block;
+  margin-top: 15px;
+  font-weight: 600;
+}

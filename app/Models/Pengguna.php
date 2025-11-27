@@ -9,16 +9,18 @@ class Pengguna extends Authenticatable
 {
     use HasFactory;
 
-    
     protected $primaryKey = 'username'; 
     public $incrementing = false;
-
     public $timestamps = false; 
 
+    protected $table = 'pengguna';
+    protected $connection = 'mysql_pengguna';
+    
     protected $fillable = [
         'username',
         'email',
         'password',
+        'date',
     ];
 
     protected $hidden = [
