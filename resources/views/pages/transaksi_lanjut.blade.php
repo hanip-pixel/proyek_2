@@ -107,18 +107,24 @@
                     </div>
                     <div class="box-ulasan">
                         <h3>Ulasan Penjual</h3>
-                        <div class="botom-sec">
-                            <p>Barang yang sudah di bayar tidak bisa di batalkan!</p>
-                            <form id="form-beli" action="{{ route('transaksi.proses') }}" method="post">
-                                @csrf
-                                <input type="hidden" name="produk_id" value="{{ $id }}">
-                                <input type="hidden" name="tabel" value="{{ $tabel }}">
-                                <input type="hidden" name="metode_pembayaran" id="input-metode" value="">
-                                <input type="hidden" name="quantity" id="input-quantity" value="1">
-                                <input type="hidden" name="total_harga" id="input-total" value="{{ $produk->harga_produk + $produk->ongkir + $produk->layanan + $produk->jasa }}">
-                                <a href="#" id="btn-beli">Beli Sekarang</a>
-                            </form>
-                        </div>
+                    <div class="botom-sec">
+                        <p>Barang yang sudah di bayar tidak bisa di batalkan!</p>
+                        <form id="form-beli" action="{{ route('transaksi.proses') }}" method="post">
+                            @csrf
+                            <input type="hidden" name="produk_id" value="{{ $id }}">
+                            <input type="hidden" name="tabel" value="{{ $tabel }}">
+                            <input type="hidden" name="metode_pembayaran" id="input-metode" value="" required>
+                            <input type="hidden" name="quantity" id="input-quantity" value="1">
+                            <!-- ✅ PERBAIKAN: GUNAKAN PERHITUNGAN YANG SAMA DENGAN JAVASCRIPT -->
+                            <input type="hidden" name="total_harga" id="input-total" value="{{ $produk->harga_produk + 1500 + 1000 + 500 }}">
+                            <button type="submit" id="btn-beli" class="btn-beli-style">
+                                <span id="btn-text">Beli Sekarang</span>
+                                <div id="btn-loading" class="spinner-border spinner-border-sm d-none" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -134,24 +140,46 @@
             const minBtn = document.querySelector('.min');
             const plusBtn = document.querySelector('.plus');
             const qtyElem = document.querySelector('.kuantitas ul li p');
+            
+            // ✅ TAMBAHKAN VARIABEL YANG HILANG
+            let quantity = 1;
+            const hargaBarang = {{ $produk->harga_produk }};
+            const ongkir = 1500;
+            const layanan = 1000;
+            const jasa = 500;
 
             const hargaBarangElem = document.getElementById('harga-barang');
             const ongkirElem = document.getElementById('ongkir');
             const layananElem = document.getElementById('layanan');
             const jasaElem = document.getElementById('jasa');
             const totalHargaElem = document.getElementById('total-harga');
+            const inputTotal = document.getElementById('input-total');
 
-            // Di bagian JavaScript, update dengan biaya tetap
-            const ongkir = 1500;
-            const layanan = 1000;
-            const jasa = 500;
+            // ✅ FUNGSI FORMAT RUPIAH YANG HILANG
+            function formatRupiah(angka) {
+                return new Intl.NumberFormat('id-ID').format(angka);
+            }
+
+            // ✅ FUNGSI UNTUK HAPUS FORMAT RUPIAH (CONVERT KE ANGKA)
+            function hapusFormatRupiah(rupiah) {
+                return parseInt(rupiah.replace(/[^\d]/g, ''));
+            }
 
             function updateHarga() {
                 const totalHargaBarang = hargaBarang * quantity;
                 const total = totalHargaBarang + ongkir + layanan + jasa;
 
+                // Update tampilan
                 hargaBarangElem.textContent = "Rp. " + formatRupiah(totalHargaBarang);
                 totalHargaElem.textContent = "Rp. " + formatRupiah(total);
+                
+                // ✅ PERBAIKAN: UPDATE INPUT HIDDEN DENGAN NILAI NUMERIK (TANPA FORMAT RUPIAH)
+                document.getElementById('input-quantity').value = quantity;
+                inputTotal.value = total; // Langsung pakai angka, tanpa format
+                
+                console.log('Quantity:', quantity);
+                console.log('Total harga:', total);
+                console.log('Input total value:', inputTotal.value);
             }
 
             minBtn.addEventListener('click', function(e) {
@@ -165,9 +193,15 @@
 
             plusBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                quantity++;
-                qtyElem.textContent = quantity;
-                updateHarga();
+                // ✅ CEK STOK SEBELUM MENAMBAH
+                const stok = {{ $produk->stok_produk }};
+                if (quantity < stok) {
+                    quantity++;
+                    qtyElem.textContent = quantity;
+                    updateHarga();
+                } else {
+                    alert('Stok tidak mencukupi!');
+                }
             });
 
             updateHarga();
@@ -175,18 +209,21 @@
             const metodeLinks = document.querySelectorAll('.metode-pembayaran');
             const btnBeli = document.getElementById('btn-beli');
             const inputMetode = document.getElementById('input-metode');
-            const inputQuantity = document.getElementById('input-quantity');
-            const inputTotal = document.getElementById('input-total');
             let metodeDipilih = false;
             let metodeTerpilih = '';
 
             metodeLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
+                    
+                    // Hapus class selected dari semua
                     metodeLinks.forEach(l => l.classList.remove('selected'));
+                    
+                    // Tambah class selected ke yang diklik
                     this.classList.add('selected');
                     metodeDipilih = true;
 
+                    // Tentukan metode berdasarkan konten
                     if (this.querySelector('.gopay')) {
                         metodeTerpilih = 'Gopay';
                     } else if (this.querySelector('.dana')) {
@@ -198,18 +235,46 @@
                     }
 
                     inputMetode.value = metodeTerpilih;
+                    console.log('Metode dipilih:', metodeTerpilih);
                 });
             });
 
             btnBeli.addEventListener('click', function(e) {
+                e.preventDefault();
+                
                 if (!metodeDipilih) {
-                    e.preventDefault();
                     alert('Silakan pilih metode pembayaran terlebih dahulu.');
-                } else {
-                    inputQuantity.value = qtyElem.textContent;
-                    inputTotal.value = document.getElementById('total-harga').textContent.replace('Rp. ', '').replace(/\./g, '');
-                    document.getElementById('form-beli').submit();
+                    return;
                 }
+
+                // ✅ VALIDASI STOK
+                const stok = {{ $produk->stok_produk }};
+                if (quantity > stok) {
+                    alert('Stok tidak mencukupi! Stok tersedia: ' + stok);
+                    return;
+                }
+
+                // ✅ DEBUG: CEK NILAI SEBELUM SUBMIT
+                console.log('=== DATA SEBELUM SUBMIT ===');
+                console.log('Produk ID:', {{ $id }});
+                console.log('Tabel:', '{{ $tabel }}');
+                console.log('Metode:', inputMetode.value);
+                console.log('Quantity:', document.getElementById('input-quantity').value);
+                console.log('Total Harga:', inputTotal.value);
+
+                // ✅ SUBMIT FORM
+                document.getElementById('form-beli').submit();
+            });
+
+            document.getElementById('form-beli').addEventListener('submit', function(e) {
+                const btn = document.getElementById('btn-beli');
+                const btnText = document.getElementById('btn-text');
+                const btnLoading = document.getElementById('btn-loading');
+                
+                // Tampilkan loading
+                btn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
             });
         });
     </script>

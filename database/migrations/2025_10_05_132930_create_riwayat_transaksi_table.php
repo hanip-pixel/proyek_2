@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('riwayat_transaksi', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
+            $table->string('user_id', 15); // Ubah dari integer menjadi string(15)
             $table->integer('produk_id');
             $table->string('tabel_produk', 20);
             $table->string('nama_produk', 50);
@@ -27,6 +27,11 @@ return new class extends Migration
             $table->string('foto_produk', 25);
             $table->enum('status', ['dikemas', 'dikirim', 'selesai'])->default('dikemas')->nullable();
             $table->timestamp('tanggal_transaksi')->nullable()->useCurrent();
+            $table->timestamps(); // Tambahkan timestamps
+            
+            // Index untuk performa
+            $table->index('user_id');
+            $table->index('tanggal_transaksi');
         });
     }
 

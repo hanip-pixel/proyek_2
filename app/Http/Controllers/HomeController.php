@@ -7,6 +7,7 @@ use App\Models\Dapur;
 use App\Models\Detergen;
 use App\Models\Obat;
 use App\Models\Rekomendasi;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -29,19 +30,33 @@ class HomeController extends Controller
         ));
     }
     
+    // Method baru untuk handle AJAX request
+    public function filterProducts(Request $request)
+    {
+        $filter = $request->get('filter', 'rekomendasi');
+        $kategori = $request->get('kategori', 'dapur');
+        
+        $products = $this->getFilteredProducts($filter);
+        
+        return response()->json([
+            'success' => true,
+            'products' => $products,
+            'filter' => $filter
+        ]);
+    }
+    
     private function getFilteredProducts($filter)
     {
         switch ($filter) {
             case 'rekomendasi':
-                // ✅ PERBAIKI: 'rekomendasi' as tabel_asal
                 return Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->get();
                 
             case 'terbaru':
-                // ✅ PERBAIKI SEMUA: ganti 'barang' jadi 'tabel_asal'
-                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->latest()->first();
-                $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->latest()->first();
-                $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->latest()->first();
-                $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->latest()->first();
+                // Gunakan kolom 'id' sebagai pengganti created_at
+                $rekomendasi = Rekomendasi::select('*')->selectRaw("'rekomendasi' as tabel_asal")->orderBy('id', 'desc')->first();
+                $dapur = Dapur::select('*')->selectRaw("'dapur' as tabel_asal")->orderBy('id', 'desc')->first();
+                $detergen = Detergen::select('*')->selectRaw("'detergen' as tabel_asal")->orderBy('id', 'desc')->first();
+                $obat = Obat::select('*')->selectRaw("'obat' as tabel_asal")->orderBy('id', 'desc')->first();
                 
                 return collect([$rekomendasi, $dapur, $detergen, $obat])->filter()->take(6);
                 

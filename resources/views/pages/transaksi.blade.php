@@ -50,7 +50,7 @@
                         <div class="beli" onclick="window.location.href='{{ route('transaksi.lanjut') }}?id={{ $produk->id }}&tabel={{ $tabel }}';" style="cursor: pointer;">
                             <h3>Beli Sekarang</h3>
                         </div>
-                        <a class="troli" href="{{ url('/keranjang/tambah/' . $tabel . '-' . $produk->id) }}">Tambah ke Keranjang</a>
+                        <a class="troli" href="{{ route('keranjang.tambah', [$tabel . '-' . $produk->id]) }}">Tambah ke Keranjang</a>
                     </div>
 
                     <h4>Bagikan</h4>

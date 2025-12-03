@@ -30,9 +30,8 @@ class ForgotPasswordController extends Controller
         }
 
         try {
-            // Cek apakah email terdaftar
-            $user = DB::connection('mysql_pengguna')
-                ->table('pengguna')
+            // Cek apakah email terdaftar - PERBAIKAN: hapus DB::connection()
+            $user = DB::table('pengguna')
                 ->where('email', $request->email)
                 ->first();
 
@@ -42,9 +41,8 @@ class ForgotPasswordController extends Controller
                     ->withInput();
             }
 
-            // Update password
-            DB::connection('mysql_pengguna')
-                ->table('pengguna')
+            // Update password - PERBAIKAN: hapus DB::connection()
+            DB::table('pengguna')
                 ->where('email', $request->email)
                 ->update([
                     'password' => Hash::make($request->password),

@@ -9,16 +9,18 @@ class Admin extends Authenticatable
 {
     use HasFactory;
 
-    
-    protected $primaryKey = 'username'; 
+    protected $primaryKey = 'username';
     public $incrementing = false;
+    public $timestamps = false;
 
-    public $timestamps = false; 
-
+    // ✅ TAMBAHKAN INI - Specify table name
+    protected $table = 'admin';
+    
     protected $fillable = [
         'username',
         'email',
         'password',
+        'date',
     ];
 
     protected $hidden = [

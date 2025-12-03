@@ -14,7 +14,7 @@ class Pengguna extends Authenticatable
     public $timestamps = false; 
 
     protected $table = 'pengguna';
-    protected $connection = 'mysql_pengguna';
+    // Hapus connection, gunakan default
     
     protected $fillable = [
         'username',

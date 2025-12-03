@@ -31,16 +31,22 @@ class KeranjangController extends Controller
         return view('pages.keranjang', compact('keranjang', 'total'));
     }
 
+    // KeranjangController.php - method tambah
     public function tambah($key)
     {
+        \Log::info('Tambah keranjang dipanggil dengan key: ' . $key);
+        
         $produk = $this->getProduct($key);
         
         if (!$produk) {
+            \Log::error('Produk tidak ditemukan untuk key: ' . $key);
             return redirect()->route('keranjang.index')->with('error', 'Produk tidak ditemukan!');
         }
 
         // Inisialisasi keranjang jika belum ada
         $keranjang = Session::get('keranjang', []);
+        
+        \Log::info('Keranjang sebelum: ', $keranjang);
         
         // Cek apakah produk sudah ada di keranjang
         if (isset($keranjang[$key])) {
@@ -57,6 +63,8 @@ class KeranjangController extends Controller
 
         // Simpan ke session
         Session::put('keranjang', $keranjang);
+        
+        \Log::info('Keranjang setelah: ', $keranjang);
 
         // Simpan ke database keranjang_pengguna
         $this->simpanKeDatabaseKeranjang(Session::get('user_id'), $key, $produk);
@@ -129,6 +137,24 @@ class KeranjangController extends Controller
             $user_id = Session::get('user_id');
             $tanggal_transaksi = now();
 
+            // ✅ PERBAIKAN: HITUNG BIAYA TETAP SEKALI SAJA UNTUK SELURUH PESANAN
+            $ongkir = 1500;
+            $layanan = 1000;
+            $jasa = 500;
+
+            // Hitung total harga barang saja (tanpa biaya tambahan)
+            $total_harga_barang = 0;
+            foreach ($keranjang as $key => $item) {
+                $produk = $this->getProduct($key);
+                if ($produk) {
+                    $total_harga_barang += $produk->harga_produk * $item['jumlah'];
+                }
+            }
+
+            // ✅ TOTAL HARGA AKHIR = TOTAL BARANG + BIAYA TETAP (HANYA SEKALI)
+            $total_harga_akhir = $total_harga_barang + $ongkir + $layanan + $jasa;
+
+            // Simpan setiap produk ke riwayat transaksi
             foreach ($keranjang as $key => $item) {
                 $produk = $this->getProduct($key);
                 if (!$produk) {
@@ -139,11 +165,15 @@ class KeranjangController extends Controller
                 $table_produk = $parts[0];
                 $produk_id = $parts[1];
 
-                // Hitung total harga
-                $total_harga = ($produk->harga_produk * $item['jumlah']) + 
-                              $produk->ongkir + 
-                              $produk->layanan + 
-                              $produk->jasa;
+                // ✅ PERBAIKAN: Hitung proporsi biaya untuk setiap produk
+                $harga_produk_total = $produk->harga_produk * $item['jumlah'];
+                $proporsi = $total_harga_barang > 0 ? $harga_produk_total / $total_harga_barang : 0;
+                
+                $ongkir_produk = round($ongkir * $proporsi);
+                $layanan_produk = round($layanan * $proporsi);
+                $jasa_produk = round($jasa * $proporsi);
+                
+                $total_harga_produk = $harga_produk_total + $ongkir_produk + $layanan_produk + $jasa_produk;
 
                 // Simpan ke riwayat transaksi
                 DB::table('riwayat_transaksi')->insert([
@@ -152,15 +182,15 @@ class KeranjangController extends Controller
                     'tabel_produk' => $table_produk,
                     'nama_produk' => $produk->nama_produk,
                     'harga_produk' => $produk->harga_produk,
-                    'ongkir' => $produk->ongkir,
-                    'layanan' => $produk->layanan,
-                    'jasa' => $produk->jasa,
+                    'ongkir' => $ongkir_produk, // Biaya ongkir untuk produk ini
+                    'layanan' => $layanan_produk, // Biaya layanan untuk produk ini
+                    'jasa' => $jasa_produk, // Biaya jasa untuk produk ini
                     'quantity' => $item['jumlah'],
-                    'total_harga' => $total_harga,
+                    'total_harga' => $total_harga_produk, // Total untuk produk ini
                     'metode_pembayaran' => $metode_pembayaran,
                     'foto_produk' => $produk->foto_produk,
-                    'tanggal_transaksi' => $tanggal_transaksi,
                     'status' => 'dikemas',
+                    'tanggal_transaksi' => $tanggal_transaksi,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
@@ -169,7 +199,7 @@ class KeranjangController extends Controller
                 DB::table($table_produk)
                     ->where('id', $produk_id)
                     ->update([
-                        'stok_produk' => DB::raw('stok_produk - ' . $item['jumlah']),
+                        'stok' => DB::raw('stok - ' . $item['jumlah']),
                         'terjual' => DB::raw('terjual + ' . $item['jumlah'])
                     ]);
             }
@@ -182,11 +212,14 @@ class KeranjangController extends Controller
 
             DB::commit();
 
-            // Delay untuk memastikan data tersimpan
-            sleep(1);
+            // ✅ DEBUG: Log total harga
+            \Log::info('Checkout berhasil:');
+            \Log::info('Total harga barang: ' . $total_harga_barang);
+            \Log::info('Biaya tambahan: ' . ($ongkir + $layanan + $jasa));
+            \Log::info('Total akhir: ' . $total_harga_akhir);
 
-            return redirect()->route('keranjang.index')->with('success', 'Pembelian berhasil, barang akan segera diproses!');
-
+            return redirect()->route('riwayat.index')->with('success', 'Pembelian berhasil, barang akan segera diproses!');
+            
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error saat checkout: ' . $e->getMessage());
@@ -238,7 +271,7 @@ class KeranjangController extends Controller
         } else {
             // Insert baru
             DB::table('keranjang_pengguna')->insert([
-                'user_id' => $user_id,
+                'user_id' => $user_id, // String (username)
                 'produk_key' => $key,
                 'nama_produk' => $produk->nama_produk,
                 'harga_produk' => $produk->harga_produk,

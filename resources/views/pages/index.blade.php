@@ -95,7 +95,7 @@
                     <div class="barang">
                         <div class="box-img">
                             <img src="{{ asset('menu/' . $product->foto_produk) }}" alt="{{ $product->nama_produk }}">
-                            <div class="box-keranjang" onclick="event.stopPropagation(); window.location.href='{{ url('/keranjang') }}?tambah={{ $product->tabel_asal }}-{{ $product->id }}';">
+                            <div class="box-keranjang" onclick="event.stopPropagation(); window.location.href='{{ route('keranjang.tambah', [$product->tabel_asal . '-' . $product->id]) }}';">
                                 <i class="bi bi-cart3"></i>
                             </div>
                         </div>
@@ -222,38 +222,36 @@ function changeFilter(filter, event) {
         event.stopPropagation();
     }
 
-    saveScrollPosition();
-
-    const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    const urlParams = new URLSearchParams(window.location.search);
-    const kategori = urlParams.get('kategori') || 'dapur';
-
-    const newUrl = `?kategori=${kategori}&filter=${filter}`;
-    window.history.replaceState({}, '', newUrl);
-
     const container = document.querySelector('.tampilan');
     container.classList.add('loading');
 
-    // Untuk Laravel, Anda perlu buat route API untuk handle filter AJAX
-    fetch(`/api/filter-products?kategori=${kategori}&filter=${filter}`)
+    const urlParams = new URLSearchParams(window.location.search);
+    const kategori = urlParams.get('kategori') || 'dapur';
+
+    // Update URL tanpa reload
+    const newUrl = `?kategori=${kategori}&filter=${filter}`;
+    window.history.replaceState({}, '', newUrl);
+
+    // AJAX request ke route Laravel
+    fetch(`/filter-products?kategori=${kategori}&filter=${filter}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 updateProductDisplay(data.products, filter);
                 updateActiveFilter(filter);
-                
-                setTimeout(() => {
-                    restoreScrollPosition();
-                    container.classList.remove('loading');
-                }, 100);
+                container.classList.remove('loading');
             } else {
                 console.error('Error fetching products:', data.message);
                 container.classList.remove('loading');
+                // Fallback: reload page jika AJAX gagal
+                window.location.href = newUrl;
             }
         })
         .catch(error => {
             console.error('Error:', error);
             container.classList.remove('loading');
+            // Fallback: reload page jika AJAX gagal
+            window.location.href = newUrl;
         });
 
     return false;
@@ -277,7 +275,7 @@ function updateProductDisplay(products, filter) {
                     <div class="barang">
                         <div class="box-img">
                             <img src="/menu/${product.foto_produk}" alt="${product.nama_produk}">
-                            <div class="box-keranjang" onclick="event.stopPropagation(); window.location.href='/keranjang?tambah=${product.tabel_asal}-${product.id}';">
+                            <div class="box-keranjang" onclick="event.stopPropagation(); window.location.href='/keranjang/tambah/${product.tabel_asal}-${product.id}';">
                                 <i class="bi bi-cart3"></i>
                             </div>
                         </div>

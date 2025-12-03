@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('keranjang_pengguna', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->unique();
+            $table->string('user_id', 15); // Ubah dari integer menjadi string(15)
             $table->string('produk_key', 50);
             $table->string('nama_produk', 100);
             $table->integer('harga_produk');
@@ -21,6 +21,9 @@ return new class extends Migration
             $table->integer('jumlah');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            
+            // Index untuk performa
+            $table->index('user_id');
         });
     }
 

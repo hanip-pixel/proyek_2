@@ -29,9 +29,8 @@ class LoginController extends Controller
         ]);
 
         try {
-            // Cari user di database pengguna
-            $user = DB::connection('mysql_pengguna')
-                ->table('pengguna')
+            // Cari user di database
+            $user = DB::table('pengguna')
                 ->where('email', $request->email)
                 ->first();
 
@@ -49,15 +48,16 @@ class LoginController extends Controller
             }
 
             // ✅ MANUAL AUTH - TANPA LARAVEL AUTH DEFAULT
+            // PERBAIKAN: gunakan username sebagai identifier, bukan id
             Session::put([
-                'user_id' => $user->id,
+                'user_id' => $user->username, // Gunakan username sebagai user_id
                 'username' => $user->username,
                 'email' => $user->email,
                 'loggedin' => true
             ]);
 
-            // Load keranjang dari database
-            $keranjang = $this->loadCartFromDatabase($user->id);
+            // Load keranjang dari database - PERBAIKAN: gunakan username sebagai user_id
+            $keranjang = $this->loadCartFromDatabase($user->username);
             if (!empty($keranjang)) {
                 Session::put('keranjang', $keranjang);
             }
@@ -90,14 +90,14 @@ class LoginController extends Controller
     /**
      * Fungsi untuk memuat keranjang dari database
      */
-    private function loadCartFromDatabase($user_id)
+    private function loadCartFromDatabase($username)
     {
         try {
             $cart = [];
             
-            $items = DB::connection('mysql_pengguna')
-                ->table('keranjang_pengguna')
-                ->where('user_id', $user_id)
+            // PERBAIKAN: gunakan username sebagai user_id
+            $items = DB::table('keranjang_pengguna')
+                ->where('user_id', $username)
                 ->get();
 
             foreach ($items as $item) {
@@ -112,7 +112,7 @@ class LoginController extends Controller
             return $cart;
             
         } catch (\Exception $e) {
-            \Log::error('Error loading cart for user ' . $user_id . ': ' . $e->getMessage());
+            \Log::error('Error loading cart for user ' . $username . ': ' . $e->getMessage());
             return [];
         }
     }

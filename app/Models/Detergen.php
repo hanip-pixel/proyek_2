@@ -12,7 +12,7 @@ class Detergen extends Model
     public $timestamps = false; 
 
     protected $table = 'detergen';
-    protected $connection = 'mysql';
+    // protected $connection = 'mysql';
     
     protected $fillable = [
             'nama_produk',

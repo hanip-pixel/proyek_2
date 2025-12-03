@@ -7,7 +7,7 @@ use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule; // Jangan lupa import ini
+use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
@@ -18,19 +18,19 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        // Validasi data dengan specify connection
+        // Validasi data - PERBAIKAN: hapus spesifikasi connection di Rule::unique
         $validator = Validator::make($request->all(), [
             'username' => [
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('mysql_pengguna.pengguna', 'username')
+                Rule::unique('pengguna', 'username') // ✅ SUDAH BENAR
             ],
             'email' => [
                 'required',
                 'email', 
                 'max:50',
-                Rule::unique('mysql_pengguna.pengguna', 'email')
+                Rule::unique('pengguna', 'email') // ✅ PERBAIKAN: hapus 'mysql_pengguna.'
             ],
             'password' => 'required|min:6|confirmed',
         ]);

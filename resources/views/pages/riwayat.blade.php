@@ -50,7 +50,7 @@
                     </div>
                     <p>Jumlah: {{ $transaksi_terakhir->quantity }}</p>
                     <p>Metode Pembayaran: {{ $transaksi_terakhir->metode_pembayaran }}</p>
-                    <p>Tanggal: {{ date('d M Y H:i', strtotime($transaksi_terakhir->tanggal_transaksi)) }}</p>
+                    <p>Tanggal: {{ \Carbon\Carbon::parse($transaksi_terakhir->tanggal_transaksi)->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
                     <p class="riwayat-harga">Total: Rp {{ number_format($transaksi_terakhir->total_harga, 0, ',', '.') }}</p>
                 </div>
               </div>
@@ -106,7 +106,7 @@
             @foreach($transaksi_dikelompokkan as $tanggal => $kelompok_transaksi)
                 <div class="transaction-group">
                     <div class="transaction-date">
-                        <h4>{{ date('d M Y H:i', strtotime($tanggal)) }}</h4>
+                        <h4>{{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}</h4>
                     </div>
                     
                     @foreach($kelompok_transaksi as $transaksi)
@@ -121,6 +121,7 @@
                             </div>
                             <p>Jumlah: {{ $transaksi->quantity }}</p>
                             <p>Metode Pembayaran: {{ $transaksi->metode_pembayaran }}</p>
+                            <p>Tanggal: {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
                             <p class="riwayat-harga">Total: Rp {{ number_format($transaksi->total_harga, 0, ',', '.') }}</p>
                         </div>
                     </div>

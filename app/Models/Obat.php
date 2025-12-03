@@ -12,7 +12,7 @@ class Obat extends Model
     public $timestamps = false; 
 
     protected $table = 'obat';
-    protected $connection = 'mysql';
+    // protected $connection = 'mysql';
     
     protected $fillable = [
             'nama_produk',

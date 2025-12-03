@@ -12,15 +12,15 @@ class Rekomendasi extends Model
     public $timestamps = false; 
 
     protected $table = 'rekomendasi';
-    protected $connection = 'mysql_barang';
+    // Hapus connection, gunakan default
     
     protected $fillable = [
-            'nama_produk',
-            'merek',
-            'harga_produk',
-            'stok',
-            'terjual',
-            'foto_produk',
-            'deskripsi'
+        'nama_produk',
+        'merek',
+        'harga_produk',
+        'stok',
+        'terjual',
+        'foto_produk',
+        'deskripsi'
     ];
 }

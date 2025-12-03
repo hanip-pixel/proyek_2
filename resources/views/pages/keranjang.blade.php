@@ -65,66 +65,83 @@
           <div class="right-bar"></div>
         </div>
         <div class="right-section">
-          <div class="right-box">
-            <h3>Ringkasan Belanja</h3>
-          </div>
-          <div class="box-ringkasan">
-            <div class="total-harga">
-              <h4>Total:</h4>
-              <p>Rp{{ number_format($total, 0, ',', '.') }}</p>
+            <div class="right-box">
+                <h3>Ringkasan Belanja</h3>
             </div>
-            <hr>
-            <div class="note">
-              <p>Total harga tidak termasuk dengan ongkos kirim dan biaya lainnya!</p>
+            <div class="box-ringkasan">
+                <div class="total-harga">
+                    <h4>Total Barang:</h4>
+                    <p>Rp{{ number_format($total, 0, ',', '.') }}</p>
+                </div>
+                <div class="biaya-tambahan">
+                    <h4>Ongkos Kirim:</h4>
+                    <p>Rp1.500</p>
+                </div>
+                <div class="biaya-tambahan">
+                    <h4>Biaya Layanan:</h4>
+                    <p>Rp1.000</p>
+                </div>
+                <div class="biaya-tambahan">
+                    <h4>Biaya Jasa:</h4>
+                    <p>Rp500</p>
+                </div>
+                <hr>
+                <div class="total-akhir">
+                    <h4>Total Akhir:</h4>
+                    <p>Rp{{ number_format($total + 1500 + 1000 + 500, 0, ',', '.') }}</p>
+                </div>
+                <hr>
+                <div class="note">
+                    <p>Biaya ongkir, layanan, dan jasa hanya dikenakan sekali per pesanan!</p>
+                </div>
+                @if(!empty($keranjang))
+                    <form method="post" action="{{ route('keranjang.checkout') }}" id="checkoutForm">
+                        @csrf
+                        <div class="box-pembayaran">
+                            <h3>Metode pembayaran</h3>
+                            <div class="metode-options">
+                                <label class="metode-pembayaran">
+                                    <input type="radio" name="metode_pembayaran" value="Gopay" required>
+                                    <div class="box-metode">
+                                      <div class="gopay">
+                                        <div class="logo-g"></div>
+                                        <h4>Gopay</h4>
+                                      </div>
+                                    </div>
+                                </label>
+                                <label class="metode-pembayaran">
+                                    <input type="radio" name="metode_pembayaran" value="Dana">
+                                    <div class="box-metode-2">
+                                      <div class="dana">
+                                        <div class="logo-d"></div>
+                                        <h4>Dana</h4>
+                                      </div>
+                                    </div>
+                                </label>
+                                <label class="metode-pembayaran">
+                                    <input type="radio" name="metode_pembayaran" value="Ovo">
+                                    <div class="box-metode-3">
+                                      <div class="ovo">
+                                        <div class="logo-o"></div>
+                                        <h4>Ovo</h4>
+                                      </div>
+                                    </div>
+                                </label>
+                                <label class="metode-pembayaran">
+                                    <input type="radio" name="metode_pembayaran" value="COD">
+                                    <div class="box-metode-4">
+                                      <div class="cod">
+                                        <div class="logo-c"></div>
+                                        <h4>Cod</h4>
+                                      </div>
+                                    </div>
+                                </label>
+                            </div>
+                          </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="checkoutButton">Beli Sekarang</button>
+                    </form>
+                @endif
             </div>
-            @if(!empty($keranjang))
-                <form method="post" action="{{ route('keranjang.checkout') }}" id="checkoutForm">
-                  @csrf
-                  <div class="box-pembayaran">
-                      <h3>Metode pembayaran</h3>
-                      <div class="metode-options">
-                          <label class="metode-pembayaran">
-                              <input type="radio" name="metode_pembayaran" value="Gopay" required>
-                              <div class="box-metode">
-                                <div class="gopay">
-                                  <div class="logo-g"></div>
-                                  <h4>Gopay</h4>
-                                </div>
-                              </div>
-                          </label>
-                          <label class="metode-pembayaran">
-                              <input type="radio" name="metode_pembayaran" value="Dana">
-                              <div class="box-metode-2">
-                                <div class="dana">
-                                  <div class="logo-d"></div>
-                                  <h4>Dana</h4>
-                                </div>
-                              </div>
-                          </label>
-                          <label class="metode-pembayaran">
-                              <input type="radio" name="metode_pembayaran" value="Ovo">
-                              <div class="box-metode-3">
-                                <div class="ovo">
-                                  <div class="logo-o"></div>
-                                  <h4>Ovo</h4>
-                                </div>
-                              </div>
-                          </label>
-                          <label class="metode-pembayaran">
-                              <input type="radio" name="metode_pembayaran" value="COD">
-                              <div class="box-metode-4">
-                                <div class="cod">
-                                  <div class="logo-c"></div>
-                                  <h4>Cod</h4>
-                                </div>
-                              </div>
-                          </label>
-                      </div>
-                  </div>
-                  <button type="submit" name="checkout" class="btn btn-primary mt-3" id="checkoutButton">Beli Sekarang</button>
-                </form>
-            @endif
-          </div>
         </div>
       </div>
     </section>

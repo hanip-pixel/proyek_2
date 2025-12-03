@@ -22,8 +22,7 @@ class TransaksiController extends Controller
         }
 
         // Ambil produk dari database
-        $produk = DB::connection('mysql_barang')
-            ->table($tabel)
+        $produk = DB::table($tabel)
             ->where('id', $id)
             ->first();
 
@@ -32,8 +31,7 @@ class TransaksiController extends Controller
         }
 
         // Ambil ulasan
-        $ulasan = DB::connection('mysql_barang')
-            ->table('ulasan')
+        $ulasan = DB::table('ulasan')
             ->where('produk_id', $id)
             ->where('tabel', $tabel)
             ->orderBy('tanggal', 'desc')
@@ -42,8 +40,7 @@ class TransaksiController extends Controller
         $total_ulasan = $ulasan->count();
 
         // Rata-rata rating
-        $avg_rating = DB::connection('mysql_barang')
-            ->table('ulasan')
+        $avg_rating = DB::table('ulasan')
             ->where('produk_id', $id)
             ->where('tabel', $tabel)
             ->avg('rating');
@@ -93,7 +90,7 @@ class TransaksiController extends Controller
         }
 
         // Simpan ulasan
-        DB::connection('mysql_barang')->table('ulasan')->insert([
+        DB::table('ulasan')->insert([
             'produk_id' => $id,
             'tabel' => $tabel,
             'nama' => $request->nama,
@@ -128,9 +125,8 @@ class TransaksiController extends Controller
             abort(404, 'Tabel tidak valid');
         }
 
-        // Ambil produk dari database barang
-        $produk = DB::connection('mysql_barang')
-            ->table($tabel)
+        // Ambil produk dari database
+        $produk = DB::table($tabel)
             ->where('id', $id)
             ->first();
 
@@ -165,10 +161,19 @@ class TransaksiController extends Controller
         $request->validate([
             'produk_id' => 'required|integer',
             'tabel' => 'required|string',
-            'metode_pembayaran' => 'required|string',
+            'metode_pembayaran' => 'required|string|in:Gopay,Dana,Ovo,COD',
             'quantity' => 'required|integer|min:1',
             'total_harga' => 'required|numeric'
         ]);
+
+        // ✅ DEBUG DETAIL: Lihat semua data yang dikirim
+        \Log::info('=== DATA PEMBELIAN DITERIMA ===');
+        \Log::info('Produk ID: ' . $request->produk_id);
+        \Log::info('Tabel: ' . $request->tabel);
+        \Log::info('Metode Pembayaran: ' . $request->metode_pembayaran);
+        \Log::info('Quantity: ' . $request->quantity);
+        \Log::info('Total Harga: ' . $request->total_harga);
+        \Log::info('User ID: ' . Session::get('user_id'));
 
         $produk_id = $request->produk_id;
         $tabel = $request->tabel;
@@ -183,8 +188,7 @@ class TransaksiController extends Controller
         }
 
         // Ambil produk untuk validasi stok
-        $produk = DB::connection('mysql_barang')
-            ->table($tabel)
+        $produk = DB::table($tabel)
             ->where('id', $produk_id)
             ->first();
 
@@ -195,7 +199,7 @@ class TransaksiController extends Controller
         // Validasi stok
         $stok = $produk->stok_produk ?? $produk->stok ?? 0;
         if ($stok < $quantity) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi');
+            return redirect()->back()->with('error', 'Stok tidak mencukupi! Stok tersedia: ' . $stok);
         }
 
         try {
@@ -204,8 +208,13 @@ class TransaksiController extends Controller
             $layanan = 1000;
             $jasa = 500;
 
-            // Simpan transaksi ke database pengguna
-            $transaksi_id = DB::connection('mysql_pengguna')->table('riwayat_transaksi')->insertGetId([
+            // ✅ DEBUG: HITUNG MANUAL UNTUK VERIFIKASI
+            $hitung_manual = ($produk->harga_produk * $quantity) + $ongkir + $layanan + $jasa;
+            \Log::info('Hitung manual total: ' . $hitung_manual);
+            \Log::info('Total dari form: ' . $total_harga);
+
+            // Simpan transaksi ke database
+            $transaksi_id = DB::table('riwayat_transaksi')->insertGetId([
                 'user_id' => Session::get('user_id'),
                 'produk_id' => $produk_id,
                 'tabel_produk' => $tabel,
@@ -215,7 +224,7 @@ class TransaksiController extends Controller
                 'layanan' => $layanan,
                 'jasa' => $jasa,
                 'quantity' => $quantity,
-                'total_harga' => $total_harga,
+                'total_harga' => $total_harga, // Pakai nilai dari form
                 'metode_pembayaran' => $metode_pembayaran,
                 'foto_produk' => $produk->foto_produk,
                 'status' => 'dikemas',
@@ -224,23 +233,25 @@ class TransaksiController extends Controller
                 'updated_at' => now()
             ]);
 
-            // Update stok produk di database barang
-            DB::connection('mysql_barang')
-                ->table($tabel)
+            // Update stok produk
+            DB::table($tabel)
                 ->where('id', $produk_id)
-                ->decrement('stok_produk', $quantity);
+                ->decrement('stok', $quantity);
 
             // Update terjual
-            DB::connection('mysql_barang')
-                ->table($tabel)
+            DB::table($tabel)
                 ->where('id', $produk_id)
                 ->increment('terjual', $quantity);
+
+            // ✅ DEBUG: Cek apakah transaksi berhasil
+            \Log::info('Transaksi berhasil dengan ID: ' . $transaksi_id);
 
             // Redirect ke halaman riwayat setelah berhasil
             return redirect()->route('riwayat.index')
                 ->with('success', 'Pembelian berhasil diproses!');
 
         } catch (\Exception $e) {
+            \Log::error('Error proses pembelian: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

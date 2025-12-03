@@ -12,7 +12,7 @@ class Dapur extends Model
     public $timestamps = false; 
 
     protected $table = 'dapur';
-    protected $connection = 'mysql';
+    // protected $connection = 'mysql';
     
     protected $fillable = [
             'nama_produk',
