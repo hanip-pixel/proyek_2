@@ -106,9 +106,9 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Stok</label>
-                        <input type="number" name="stok_produk" class="form-control" required>
+                        <input type="number" name="stok" class="form-control" required>
                     </div>
-                    <div class="mb-3">
+                    {{-- <div class="mb-3">
                         <label class="form-label">Ongkir</label>
                         <input type="number" name="ongkir" class="form-control" value="1500" required>
                     </div>
@@ -119,7 +119,7 @@
                     <div class="mb-3">
                         <label class="form-label">Biaya Jasa</label>
                         <input type="number" name="jasa" class="form-control" value="500" required>
-                    </div>
+                    </div> --}}
                     <div class="mb-3">
                         <label class="form-label">Deskripsi</label>
                         <textarea name="deskripsi" class="form-control" rows="3" required></textarea>

@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+    // Di semua migration file, ubah:
         Schema::create('rekomendasi', function (Blueprint $table) {
-            $table->id(); // otomatis primary & auto increment
+            $table->id();
             $table->string('nama_produk', 50);
-            $table->string('merek', 50);
+            $table->string('merek', 50)->nullable();  // Tambahkan nullable
             $table->integer('harga_produk');
-            $table->integer('stok');
-            $table->integer('terjual');
-            $table->string('foto_produk', 25);
+            $table->integer('stok');  // Tetap 'stok' bukan 'stok_produk'
+            $table->integer('terjual')->default(0);  // Tambahkan default
+            $table->string('foto_produk', 100)->nullable();  // Perbesar ke 100 karakter
             $table->text('deskripsi');
+            $table->timestamps();  // Tambahkan timestamps
         });
     }
 

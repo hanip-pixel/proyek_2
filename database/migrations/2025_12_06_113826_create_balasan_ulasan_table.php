@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ulasan', function (Blueprint $table) {
+        Schema::create('balasan_ulasan', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->nullable();
-            $table->integer('produk_id');
-            $table->string('tabel', 50);
-            $table->string('email', 100)->nullable();
-            $table->string('nama', 100);
-            $table->text('komentar');
-            $table->integer('rating')->default(0);
+            $table->foreignId('ulasan_id')
+                  ->constrained('ulasan')
+                  ->onDelete('cascade');
+            $table->string('admin_id')->nullable(); // ID admin yang membalas
+            $table->text('pesan');
             $table->dateTime('tanggal')->useCurrent();
             $table->timestamps();
         });
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ulasan');
+        Schema::dropIfExists('balasan_ulasan');
     }
 };

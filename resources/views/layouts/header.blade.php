@@ -24,6 +24,7 @@
                     <a class="nav-link" href="{{ url('/riwayat') }}">Riwayat</a>
                 </li>
             </ul>
+            {{-- resources/views/layouts/header.blade.php --}}
             <form class="d-flex search-form ms-auto" action="{{ url('/search') }}" method="GET">
                 <input
                     class="form-control me-2 search-input"

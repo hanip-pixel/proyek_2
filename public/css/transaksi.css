@@ -580,6 +580,47 @@ body {
   line-height: 1.6;
 }
 
+/* Styling untuk balasan admin */
+.balasan-admin {
+    margin-top: 15px;
+    padding-left: 15px;
+    border-left: 3px solid #007bff;
+    background-color: #f8f9fa;
+}
+
+.rating-summary .rating-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.rating-summary .stars {
+    color: #ffc107;
+    font-size: 1.3rem;
+    margin: 5px 0;
+}
+
+.ulasan-form .form-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.balasan-admin .text-primary {
+    color: #007bff !important;
+}
+
+/* Admin panel khusus */
+.admin-ulasan-item {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.admin-ulasan-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.2);
+}
+
 /* Footer */
 
 .box-footer {

@@ -22,6 +22,10 @@
            href="{{ route('admin.users.index') }}">
             <i class="bi bi-people me-2"></i> Manajemen Pengguna
         </a>
+        <a class="nav-link {{ request()->routeIs('admin.ulasan.*') ? 'active' : '' }}" 
+            href="{{ route('admin.ulasan.index') }}">
+            <i class="bi bi-chat-text me-2"></i> Manajemen Ulasan
+        </a>        
         <form action="{{ route('admin.logout') }}" method="POST" class="nav-link">
             @csrf
             <button type="submit" class="btn btn-link text-white p-0 border-0 text-start w-100">

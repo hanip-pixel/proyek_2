@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\BalasanUlasanController;
+use App\Http\Controllers\Admin\UlasanController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -63,8 +65,9 @@ Route::prefix('profil')->group(function () {
     Route::post('/simpan-alamat', [ProfilController::class, 'simpanAlamat'])->name('profil.simpanAlamat');
 });
 
+// routes/web.php
 Route::get('/search', [SearchController::class, 'search'])->name('search');
-Route::get('/transaksi/{id}/{tabel}', [TransactionController::class, 'show'])->name('transaksi');
+Route::get('/transaksi/{id}/{tabel}', [TransaksiController::class, 'show'])->name('transaksi');
 Route::get('/keranjang/tambah/{type}/{id}', [CartController::class, 'tambah'])->name('keranjang.tambah');
 
 // Register
@@ -102,10 +105,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(functi
     
     // Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+
+        Route::prefix('ulasan')->name('ulasan.')->group(function () {
+        Route::get('/', [UlasanController::class, 'index'])->name('index');
+        Route::post('/{id}/balasan', [UlasanController::class, 'storeBalasan'])->name('balasan.store');
+        Route::delete('/{id}', [UlasanController::class, 'destroy'])->name('destroy');
+        Route::delete('/balasan/{id}', [UlasanController::class, 'destroyBalasan'])->name('balasan.destroy');
+    });
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+// ✅ TAMBAHKAN ROUTE UNTUL ULASAN
+Route::post('/transaksi/{id}/{tabel}/ulasan', [TransaksiController::class, 'storeUlasan'])->name('transaksi.ulasan.store');
 
 // Redirect root to admin login
 // Route::get('/', function () {

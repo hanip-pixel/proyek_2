@@ -34,100 +34,67 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // Debug input
-        Log::info('====== PRODUCT STORE REQUEST ======');
-        Log::info('All Input:', $request->all());
-        Log::info('Files:', $request->files->all());
-
         $request->validate([
             'tabel' => 'required|in:dapur,detergen,obat,rekomendasi',
             'nama_produk' => 'required|string|max:50',
+            'merek' => 'nullable|string|max:50',  // Tambahkan validasi merek
             'harga_produk' => 'required|integer|min:0',
-            'stok_produk' => 'required|integer|min:0',
+            'stok' => 'required|integer|min:0',  // Ubah dari 'stok_produk' ke 'stok'
             'deskripsi' => 'required|string',
-            'ongkir' => 'required|integer|min:0',
-            'layanan' => 'required|integer|min:0',
-            'jasa' => 'required|integer|min:0',
             'foto_produk' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            // Hapus ongkir, layanan, jasa jika tidak ada di tabel
         ]);
 
         DB::beginTransaction();
         try {
             $tabel = $request->tabel;
             
-            // Cek struktur tabel
-            Log::info("Checking table structure: $tabel");
-            $columns = DB::select("SHOW COLUMNS FROM $tabel");
-            $columnNames = array_column($columns, 'Field');
-            Log::info("Columns in $tabel:", $columnNames);
-            
-            // Handle file upload
+            // Handle file upload dengan nama lebih pendek
             $fileName = null;
             if ($request->hasFile('foto_produk')) {
                 $file = $request->file('foto_produk');
-                $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9.]/', '_', $file->getClientOriginalName());
-                $uploadPath = public_path('menu');
+                $extension = $file->getClientOriginalExtension();
+                $fileName = 'prod_' . time() . '.' . $extension;  // Nama lebih pendek
                 
-                // Pastikan folder ada
+                $uploadPath = public_path('menu');
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
                 }
                 
                 $file->move($uploadPath, $fileName);
-                Log::info('File uploaded to:', ['path' => $uploadPath . '/' . $fileName]);
-            } else {
-                Log::warning('No file uploaded!');
             }
             
-            // Siapkan data berdasarkan struktur tabel yang sebenarnya
-            $data = [];
+            // Siapkan data sesuai struktur migration
+            $data = [
+                'nama_produk' => $request->nama_produk,
+                'merek' => $request->merek ?? 'Generic',
+                'harga_produk' => $request->harga_produk,
+                'stok' => $request->stok,  // Gunakan 'stok' bukan 'stok_produk'
+                'terjual' => 0,
+                'deskripsi' => $request->deskripsi,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
             
-            // Field wajib
-            $data['nama_produk'] = $request->nama_produk;
-            $data['harga_produk'] = $request->harga_produk;
-            $data['deskripsi'] = $request->deskripsi;
-            
-            // Field stok - cek nama kolom yang benar
-            if (in_array('stok_produk', $columnNames)) {
-                $data['stok_produk'] = $request->stok_produk;
-            } elseif (in_array('stok', $columnNames)) {
-                $data['stok'] = $request->stok_produk;
-            } else {
-                Log::error("No stock column found in table $tabel");
-                throw new \Exception("Kolom stok tidak ditemukan di tabel $tabel");
-            }
-            
-            // Field opsional berdasarkan tabel
-            if (in_array('ongkir', $columnNames)) $data['ongkir'] = $request->ongkir;
-            if (in_array('layanan', $columnNames)) $data['layanan'] = $request->layanan;
-            if (in_array('jasa', $columnNames)) $data['jasa'] = $request->jasa;
-            if (in_array('merek', $columnNames)) $data['merek'] = $request->merek ?? 'Generic';
-            if (in_array('terjual', $columnNames)) $data['terjual'] = 0;
-            if (in_array('foto_produk', $columnNames) && $fileName) {
+            // Tambahkan foto hanya jika ada
+            if ($fileName) {
                 $data['foto_produk'] = $fileName;
             }
             
-            Log::info("Data to insert into $tabel:", $data);
+            Log::info("Inserting into $tabel:", $data);
             
             // Insert data
             $result = DB::table($tabel)->insert($data);
-            Log::info("Insert result: " . ($result ? 'Success' : 'Failed'));
-            
-            // Dapatkan ID yang baru saja diinsert
-            $newId = DB::table($tabel)->max('id');
-            Log::info("New product ID: $newId");
             
             DB::commit();
 
             return redirect()->route('admin.products.index')
-                ->with('success', 'Produk berhasil ditambahkan! ID: ' . $newId);
+                ->with('success', 'Produk berhasil ditambahkan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in store method:', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
@@ -139,44 +106,26 @@ class ProductController extends Controller
 
     public function updateStock(Request $request)
     {
-        Log::info('Update Stock Request:', $request->all());
-        
         $request->validate([
             'tabel' => 'required|in:dapur,detergen,obat,rekomendasi',
             'id' => 'required|integer',
-            'stok' => 'required|integer|min:0',
+            'stok' => 'required|integer|min:0',  // Tetap 'stok'
         ]);
 
         try {
-            $tabel = $request->tabel;
-            $id = $request->id;
-            $newStock = $request->stok;
-            
-            // Cek field stok yang benar
-            $columns = DB::select("SHOW COLUMNS FROM $tabel");
-            $columnNames = array_column($columns, 'Field');
-            
-            $stokField = 'stok';
-            if (in_array('stok_produk', $columnNames)) {
-                $stokField = 'stok_produk';
-            }
-            
-            Log::info("Updating $stokField to $newStock for ID $id in $tabel");
-            
-            $affected = DB::table($tabel)
-                ->where('id', $id)
-                ->update([$stokField => $newStock]);
+            $affected = DB::table($request->tabel)
+                ->where('id', $request->id)
+                ->update([
+                    'stok' => $request->stok,  // Langsung 'stok'
+                    'updated_at' => now()
+                ]);
                 
-            Log::info("Rows affected: $affected");
-
             return redirect()->route('admin.products.index')
-                ->with('success', "Stok produk berhasil diupdate menjadi $newStock!");
+                ->with('success', "Stok produk berhasil diupdate!");
 
         } catch (\Exception $e) {
             Log::error('Error updating stock:', ['error' => $e->getMessage()]);
-            
-            return redirect()->back()
-                ->with('error', 'Gagal mengupdate stok: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengupdate stok');
         }
     }
 

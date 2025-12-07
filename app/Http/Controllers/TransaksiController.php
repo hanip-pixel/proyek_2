@@ -74,25 +74,72 @@ class TransaksiController extends Controller
         return $this->show($id, $tabel);
     }
 
-    public function storeUlasan(Request $request, $id, $tabel)
-    {
-        // Validasi
-        $request->validate([
-            'nama' => 'required|string|max:100',
-            'komentar' => 'required|string',
-            'rating' => 'required|integer|between:1,5'
-        ]);
+// app/Http/Controllers/TransaksiController.php
+public function storeUlasan(Request $request, $id, $tabel)
+{
+    // Cek login
+    if (!Session::get('loggedin')) {
+        return redirect('/login')->with('error', 'Anda harus login terlebih dahulu!');
+    }
 
-        // Validasi nama tabel
-        $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
-        if (!in_array($tabel, $tabel_valid)) {
-            return redirect()->back()->with('error', 'Tabel tidak valid');
+    // Validasi
+    $request->validate([
+        'nama' => 'required|string|max:100',
+        'komentar' => 'required|string|max:500',
+        'rating' => 'required|integer|between:1,5'
+    ]);
+
+    // Validasi nama tabel
+    $tabel_valid = ['dapur', 'detergen', 'obat', 'rekomendasi'];
+    if (!in_array($tabel, $tabel_valid)) {
+        return redirect()->back()->with('error', 'Tabel tidak valid');
+    }
+
+    // Cek apakah produk ada
+    $produk = DB::table($tabel)->where('id', $id)->first();
+    if (!$produk) {
+        return redirect()->back()->with('error', 'Produk tidak ditemukan');
+    }
+
+    // Ambil data pengguna dari session
+    $username = Session::get('username'); // Ini string 'hanif'
+    $user_id = Session::get('user_id'); // Ini juga string 'hanif'
+    
+    // Jika user_id adalah string dan tabel ulasan mengharapkan integer,
+    // kita perlu mendapatkan ID numerik dari tabel pengguna
+    try {
+        // Cari user di tabel pengguna untuk mendapatkan ID yang sesuai
+        $pengguna = DB::table('pengguna')->where('username', $username)->first();
+        
+        if ($pengguna) {
+            // Jika ada kolom 'id' di tabel pengguna
+            if (isset($pengguna->id)) {
+                $numeric_user_id = $pengguna->id;
+            } else {
+                // Jika tidak ada kolom 'id', gunakan username sebagai user_id (string)
+                $numeric_user_id = $username;
+            }
+        } else {
+            // Jika tidak ditemukan, gunakan default
+            $numeric_user_id = 0;
         }
+    } catch (\Exception $e) {
+        $numeric_user_id = 0;
+    }
 
-        // Simpan ulasan
+    // Buat email default jika tidak ada
+    $email = Session::get('email');
+    if (!$email && $username) {
+        $email = $username . '@user.com';
+    }
+
+    // Simpan ulasan
+    try {
         DB::table('ulasan')->insert([
+            'user_id' => $numeric_user_id, // Gunakan ID numerik atau string
             'produk_id' => $id,
             'tabel' => $tabel,
+            'email' => $email,
             'nama' => $request->nama,
             'komentar' => $request->komentar,
             'rating' => $request->rating,
@@ -101,9 +148,18 @@ class TransaksiController extends Controller
             'updated_at' => now()
         ]);
 
-        return redirect("/transaksi/{$id}/{$tabel}")->with('success', 'Ulasan berhasil dikirim!');
-    }
+        return redirect("/transaksi/{$id}/{$tabel}")
+            ->with('success', 'Ulasan berhasil dikirim! Terima kasih atas ulasan Anda.');
 
+    } catch (\Exception $e) {
+        \Log::error('Error menyimpan ulasan: ' . $e->getMessage());
+        
+        // Untuk debugging, tampilkan error detail
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Terjadi kesalahan saat menyimpan ulasan. Error: ' . $e->getMessage());
+    }
+}
     // METHOD UNTUK TRANSAKSI LANJUT
     public function showLanjut(Request $request)
     {
