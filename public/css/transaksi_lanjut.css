@@ -47,6 +47,41 @@ body {
   margin-left: 1px; /* Jarak antara logo dan teks/tombol lainnya */
 }
 
+/* Styling untuk tombol Sign Out */
+.btn-signout-custom {
+    background-color: transparent !important;
+    color: #dc3545 !important;
+    border: 2px solid #dc3545 !important;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+}
+
+.btn-signout-custom:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-signin-custom {
+    background-color: #198754 !important;
+    color: white !important;
+    border: 2px solid #198754 !important;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+}
+
+.btn-signin-custom:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+    color: white !important;
+}
+
 .nav-item a {
   font-family: "Poppiens", sans-serif;
   color: var(--color-text);
@@ -502,6 +537,47 @@ body {
 .spinner-border-sm {
     width: 1rem;
     height: 1rem;
+}
+
+/* Styling untuk tombol Beli Sekarang */
+.btn-beli-style {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 8px 30px;
+    background-color: #32de32 !important;
+    border: 2px solid #32de32 !important;
+    border-radius: 10px;
+    height: 40px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 16px;
+    min-width: 150px;
+}
+
+.btn-beli-style:hover {
+    background-color: #00695c !important;
+    border-color: #00695c !important;
+    color: white !important;
+}
+
+/* Untuk loading state */
+.btn-beli-style:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Style untuk teks dan spinner dalam tombol */
+#btn-text {
+    display: inline-block;
+}
+
+#btn-loading {
+    margin-left: 8px;
 }
 
 /* Footer */

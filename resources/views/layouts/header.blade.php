@@ -54,10 +54,16 @@
                 @if(Session::get('loggedin'))
                     <form method="POST" action="{{ url('/logout') }}" style="display: inline;">
                         @csrf
-                        <button type="submit" class="btn btn-link p-0" style="text-decoration: none; border: none; background: none; color: inherit;">Sign Out</button>
+                        <button type="submit" 
+                                class="btn btn-signout-custom">
+                            <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                        </button>
                     </form>
                 @else
-                    <a href="{{ url('/login') }}">Sign In</a>
+                    <a href="{{ url('/login') }}" 
+                    class="btn btn-signin-custom">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                    </a>
                 @endif
             </div>
         </div>

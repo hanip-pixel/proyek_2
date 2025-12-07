@@ -48,6 +48,41 @@ body {
   margin-left: 1px;
 }
 
+/* Styling untuk tombol Sign Out */
+.btn-signout-custom {
+    background-color: transparent !important;
+    color: #dc3545 !important;
+    border: 2px solid #dc3545 !important;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+}
+
+.btn-signout-custom:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-signin-custom {
+    background-color: #198754 !important;
+    color: white !important;
+    border: 2px solid #198754 !important;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+}
+
+.btn-signin-custom:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+    color: white !important;
+}
+
 .nav-item a {
   font-family: "Poppiens", sans-serif;
   color: var(--color-text);

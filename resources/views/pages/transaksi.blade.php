@@ -164,39 +164,38 @@
         
         .validasi {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
-            margin: 20px 0;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
         }
-        
+
         .beli {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
+            background-color: #32de32;
+            padding: 12px 30px;
+            border-radius: 50px;
+            display: inline-block;
             cursor: pointer;
             transition: background-color 0.3s;
-            border: none;
-        }
-        
-        .beli:hover {
-            background-color: #218838;
-        }
-        
-        .troli {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
             text-decoration: none;
-            transition: background-color 0.3s;
+            min-width: 600px;
+            text-align: center;
+        }
+
+        .troli {
+            background-color: #f4e66b;
+            color: var(--text-2);
+            font-size: 20px;
+            font-weight: 700;
+            padding: 12px 30px;
+            border-radius: 50px;
             display: inline-block;
-        }
-        
-        .troli:hover {
-            background-color: #0056b3;
-            color: white;
-        }
-        
+            text-decoration: none;
+            min-width: 600px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }        
         .barang {
             margin-top: 20px;
         }

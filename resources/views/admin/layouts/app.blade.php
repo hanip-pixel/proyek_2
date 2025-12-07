@@ -121,6 +121,15 @@
             position: relative;
             z-index: 9999;
         }
+
+        .sidebar .btn-link {
+            text-decoration: none !important;
+        }
+
+        /* Atau lebih spesifik: */
+        .sidebar form .btn-link {
+            text-decoration: none !important;
+        }
     </style>
 </head>
 <body>
